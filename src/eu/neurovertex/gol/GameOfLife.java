@@ -5,17 +5,17 @@ package eu.neurovertex.gol;
  * @author Neurovertex
  *         Date: 18/10/2014, 22:32
  */
-public class GameOfLife implements CellularAutomaton.LocalEvolutionFunction {
+public class GameOfLife implements Lattice.LocalEvolutionFunction {
 	@Override
-	public State apply(State cell, State... neighbours) {
+	public boolean apply(boolean cell, boolean... neighbours) {
 		int living = 0;
-		for (State st : neighbours)
-			if (st == State.ONE)
+		for (boolean st : neighbours)
+			if (st)
 				living ++;
 
-		if (cell == State.ZERO)
-			return (living == 3) ? State.ONE : State.ZERO;
+		if (!cell)
+			return living == 3;
 		else
-			return (living < 2 || living > 3) ? State.ZERO : State.ONE;
+			return !(living < 2 || living > 3);
 	}
 }

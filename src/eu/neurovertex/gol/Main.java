@@ -1,6 +1,5 @@
 package eu.neurovertex.gol;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,18 +10,25 @@ import java.io.InputStreamReader;
  */
 public class Main {
 	public static void main(String[] args) throws IOException {
-		final CellularAutomaton automaton = new CellularAutomaton(20, 20, new GameOfLife(), true, true);
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | UnsupportedLookAndFeelException | InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
+		boolean[][] lat = new boolean[5][6];
 
+		lat[1][3] = lat[2][3] = lat[3][3] = true; // horizontal bar
+		lat[0][0] = true;
+
+		Lattice lattice = new Lattice(lat);
 		MainWindow window = new MainWindow();
-		window.getAutomatonPanel().setAutomaton(automaton);
-		new PeriodicityObserver(automaton).setOutput(window::setOutput); // Set the window's output bar upon detecting periodicity
+		TransitionGraph graph = new TransitionGraph();
+		graph.addNode(lattice);
+		System.out.println(graph.calculateLevel(lattice));
+		window.drawLattice(lattice);
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		reader.readLine();
-
+		String line;
+		System.out.println("hashcode : "+ lattice.hashCode());
+		do {
+			line = reader.readLine();
+			lattice = lattice.iterate();
+			window.drawLattice(lattice);
+			System.out.println("hashcode : "+ lattice.hashCode());
+		} while (!line.equals("exit"));
 	}
 }
