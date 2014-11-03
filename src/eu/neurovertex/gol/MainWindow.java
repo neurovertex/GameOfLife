@@ -4,10 +4,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
@@ -82,6 +79,12 @@ public class MainWindow extends JFrame implements ActionListener, Runnable, Chan
 		add(toolBar, BorderLayout.NORTH);
 
 		panel = new AutomatonPanel(this);
+		panel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				MainWindow.this.mouseClicked(e);
+			}
+		});
 		add(panel, BorderLayout.CENTER);
 
 		output = new JLabel(" ");
@@ -131,6 +134,7 @@ public class MainWindow extends JFrame implements ActionListener, Runnable, Chan
 		command = Optional.of(e);
 	}
 
+	@SuppressWarnings("InfiniteLoopStatement")
 	@Override
 	public void run() {
 		long next = System.currentTimeMillis() + delay;
@@ -184,5 +188,11 @@ public class MainWindow extends JFrame implements ActionListener, Runnable, Chan
 		delay = Math.max(((SpinnerNumberModel) period.getModel()).getNumber().intValue(), 10); // Sanity check
 		if (playing)
 			setStatus(String.format("Iterating at %.1ffps", 1000.0 / delay));
+	}
+
+	public void mouseClicked(MouseEvent e) {
+		Point pos = panel.translateCoordinates(e.getX(), e.getY());
+		if (pos != null)
+			panel.getAutomaton().get().set(pos.x, pos.y, panel.getAutomaton().get().get(pos.x, pos.y) == State.ZERO ? State.ONE : State.ZERO);
 	}
 }

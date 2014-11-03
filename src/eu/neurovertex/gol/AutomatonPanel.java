@@ -9,7 +9,7 @@ import java.util.*;
  *         Date: 18/10/2014, 22:41
  */
 public class AutomatonPanel extends JPanel implements Observer {
-	private static final int DEFAULT_SIDE = 750;
+	private static final int DEFAULT_SIDE = 660;
 	private static final Map<State, Color> colors = new HashMap<>();
 
 	static {
@@ -79,6 +79,15 @@ public class AutomatonPanel extends JPanel implements Observer {
 	public void setPreferredSize(Dimension preferredSize) {
 		super.setPreferredSize(preferredSize);
 		window.pack();
+	}
+
+	public Point translateCoordinates(int mouseX, int mouseY) {
+		if (!automaton.isPresent())
+			return null;
+		CellularAutomaton auto = automaton.get();
+		int side = Math.min(getWidth() / auto.getWidth(), getHeight() / auto.getHeight()),
+				xoffset = (getWidth() - side * auto.getWidth()) / 2, yoffset = (getHeight() - side * auto.getHeight()) / 2;
+		return new Point((mouseX - xoffset)/side, (mouseY - yoffset)/side);
 	}
 
 	public Optional<CellularAutomaton> getAutomaton() {
