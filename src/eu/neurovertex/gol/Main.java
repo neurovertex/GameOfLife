@@ -11,7 +11,11 @@ import java.io.InputStreamReader;
  */
 public class Main {
 	public static void main(String[] args) throws IOException {
-		final CellularAutomaton automaton = new CellularAutomaton(100, 100, new GameOfLife(), true, true);
+		int size = 20;
+		if (args.length > 0) {
+			size = Integer.parseInt(args[0]);
+		}
+		final CellularAutomaton automaton = new CellularAutomaton(size, size, new GameOfLife(), true, true);
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | UnsupportedLookAndFeelException | InstantiationException | IllegalAccessException e) {
