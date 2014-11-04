@@ -11,7 +11,6 @@ import java.util.*;
  */
 public class LatticePanel extends JPanel implements Observer {
 	private static final int DEFAULT_SIDE = 250;
-	private static final Color trueColor = Color.GREEN, falseColor = Color.BLACK;
 
 	private final MainWindow window;
 	private volatile Image buffer = new BufferedImage(DEFAULT_SIDE, DEFAULT_SIDE, BufferedImage.TYPE_INT_ARGB);
@@ -30,8 +29,8 @@ public class LatticePanel extends JPanel implements Observer {
 
 	@Override
 	public void update(Observable o, Object arg) {
-		if (arg instanceof Lattice)
-			drawLattice((Lattice) arg);
+		if (arg instanceof StaticLattice)
+			drawLattice((StaticLattice) arg);
 	}
 
 	void drawLattice(Lattice lattice) {
@@ -47,7 +46,7 @@ public class LatticePanel extends JPanel implements Observer {
 		int w = lattice.getWidth(), h = lattice.getHeight();
 		for (int i = 0; i < w; i++)
 			for (int j = 0; j < h; j++) {
-				g.setColor(lattice.get(i, j) ? trueColor : falseColor);
+				g.setColor(lattice.getColor(i, j));
 				g.fillRect(i * side + xoffset, j * side + yoffset, side - 1, side - 1);
 			}
 		g.setColor(Color.DARK_GRAY);
