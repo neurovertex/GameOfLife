@@ -101,7 +101,14 @@ public class TransitionGraph {
 	 * @see eu.neurovertex.gol.TransitionGraph#getLevel(StaticLattice)
 	 */
 	public int calculateLevel(StaticLattice node) {
-		return calculateLevel(addOrGet(node));
+		try {
+			return calculateLevel(addOrGet(node));
+		} catch (OutOfMemoryError err) {
+			System.err.println("Out of memory ! clearing transition graph");
+			map.clear();
+			return calculateLevel(node);
+
+		}
 	}
 
 	private int calculateLevel(GraphNode node) {
