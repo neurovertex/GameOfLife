@@ -9,8 +9,6 @@ import java.util.Arrays;
  *         Date: 18/10/2014, 13:49
  */
 public class StaticLattice implements Cloneable, Lattice {
-	public static final int[][] neighbours = {new int[]{1, 0}, new int[]{0, 1}, new int[]{-1, 0}, new int[]{0, -1},
-												new int[]{1, -1}, new int[]{-1, -1}, new int[]{1, 1}, new int[]{-1, 1}};
 	private static LocalEvolutionFunction function = GameOfLife::evolve;
 	private boolean[][] lattice;
 	private int width, height;
@@ -31,7 +29,7 @@ public class StaticLattice implements Cloneable, Lattice {
 	 * @param lattice	Lattice to copy from
 	 */
 	public StaticLattice(boolean[][] lattice) {
-		this.lattice = lattice.clone();
+		this.lattice = Lattice.cloneArray(lattice);
 		this.width = lattice.length;
 		this.height = lattice[0].length;
 	}
@@ -84,7 +82,7 @@ public class StaticLattice implements Cloneable, Lattice {
 	 * @return a copy of the underlying array of booleans of this lattice
 	 */
 	public boolean[][] getLattice() {
-		return lattice.clone();
+		return Lattice.cloneArray(lattice);
 	}
 
 	/**
@@ -96,7 +94,7 @@ public class StaticLattice implements Cloneable, Lattice {
 	@Override
 	protected StaticLattice clone() throws CloneNotSupportedException {
 		StaticLattice newLat = (StaticLattice)super.clone();
-		newLat.lattice = lattice.clone();
+		newLat.lattice = Lattice.cloneArray(lattice);
 		return newLat;
 	}
 

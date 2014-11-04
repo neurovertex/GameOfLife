@@ -22,16 +22,18 @@ public class Main {
 		graph.addNode(lattice);
 		System.out.println(graph.calculateLevel(lattice));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		System.out.println("hashcode : "+ lattice.hashCode());
+		System.out.println("hashcode : " + lattice.hashCode());
 		Optional<StaticLattice> nextLat = Optional.of(lattice);
 		do {
 			lattice = nextLat.get();
 			window.drawLattice(lattice);
-			System.out.println("hashcode : "+ lattice.hashCode() + ", successor hashcode : "+ lattice.iterate().hashCode());
+			System.out.println("hashcode : " + lattice.hashCode() + ", successor hashcode : " + lattice.iterate().hashCode());
 			reader.readLine();
 			nextLat = new GameOfLife(lattice).findPredecessor();
-			if (nextLat.isPresent() && !nextLat.get().iterate().equals(lattice))
-				System.out.println("NOT PREDECESSOR!");
+			if (nextLat.isPresent()) {
+				if (!nextLat.get().iterate().equals(lattice))
+					System.out.println("NOT PREDECESSOR!");
+			}
 		} while (nextLat.isPresent());
 		System.out.println("No predecessor found");
 	}
