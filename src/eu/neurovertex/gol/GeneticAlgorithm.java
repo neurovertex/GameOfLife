@@ -3,6 +3,7 @@ package eu.neurovertex.gol;
 import java.util.*;
 
 
+@SuppressWarnings("ALL")
 public class GeneticAlgorithm {
     public static Random random = new Random(2);
 
@@ -29,11 +30,25 @@ public class GeneticAlgorithm {
 
         return new StaticLattice(array);
     }
+    public static  void afficheLattice(StaticLattice individu){
+        boolean[][] array = individu.getLattice();
+        for (int x = 0 ; x < individu.getWidth() ; ++x){
+            for (int y = 0 ; y < individu.getHeight() ; ++y){
+                if (array[x][y]){
+                    System.out.print("1 " );
+                }
+                else {
+                    System.out.print("0 " );
+                }
+            }
+            System.out.print("\n" );
+        }
+    }
 
     public static void main(String[] args) {
 
-        final int TAILLEGRILLE = 100, TAILLEPOP = 50,
-                NBGENERATIONS = 100, NBMUTATIONS = 10;
+        final int TAILLEGRILLE = 100, TAILLEPOP = 15,
+                NBGENERATIONS = 25, NBMUTATIONS = 10;
 
         List<StaticLattice> generation = new ArrayList<>(50);
         for (int i = 0 ; i < TAILLEPOP; ++i){
@@ -52,14 +67,22 @@ public class GeneticAlgorithm {
                 }
             }
             System.out.printf("Generation %d, meilleur : %d%n", i, graph.calculateLevel(meilleur));
+            //afficheLattice(meilleur);
             generation.clear();
             generation.add(meilleur);
-            for (int j = 0 ; j < TAILLEPOP - 1 ; ++j){
+            for (int j = 0 ; j < TAILLEPOP/3 ; ++j){
                 generation.add(mutation(meilleur, NBMUTATIONS));
+            }
+            for (int j = 0 ; j < TAILLEPOP/3 ; ++j){
+                generation.add(mutation(meilleur, NBMUTATIONS*5));
+            }
+            for (int j = 0 ; j < TAILLEPOP - (2*TAILLEPOP/3 +1) ; ++j){
+                generation.add(mutation(meilleur, NBMUTATIONS*10));
             }
         }
         Collections.sort(generation, Comparator.comparingInt(graph::calculateLevel));
         System.out.println(graph.calculateLevel(generation.get(generation.size()-1)));
+        afficheLattice(generation.get(generation.size()-1));
 
     }
 }
