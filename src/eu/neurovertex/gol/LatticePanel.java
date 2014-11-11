@@ -10,7 +10,7 @@ import java.util.*;
  *         Date: 18/10/2014, 22:41
  */
 public class LatticePanel extends JPanel implements Observer {
-	private static final int DEFAULT_SIDE = 250;
+	private static final int DEFAULT_SIDE = 15;
 
 	private final MainWindow window;
 	private volatile Image buffer = new BufferedImage(DEFAULT_SIDE, DEFAULT_SIDE, BufferedImage.TYPE_INT_ARGB);
@@ -18,7 +18,7 @@ public class LatticePanel extends JPanel implements Observer {
 	public LatticePanel(MainWindow window) {
 		super();
 		this.window = window;
-		setPreferredSize(new Dimension(DEFAULT_SIDE, DEFAULT_SIDE));
+		setPreferredSize(new Dimension(DEFAULT_SIDE * 100, DEFAULT_SIDE));
 	}
 
 	@Override

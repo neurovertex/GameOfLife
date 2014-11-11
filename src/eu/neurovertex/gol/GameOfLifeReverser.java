@@ -14,47 +14,60 @@ import java.util.function.Consumer;
 public class GameOfLifeReverser {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		boolean[][] lat = new boolean[10][10];
-
-		lat[2][1] = lat[1][2] = lat[1][3] = lat[2][3] = lat[3][3] = true; // glider
+		boolean[][] lat = new boolean[100][1];
+		String config = "0000000000010001100110001010010000000100010100000100000000001000000000010000000100000000000010001000";
+		for (int i = 0; i < 100; i++)
+			lat[i][0] = config.charAt(i) == '1';
+		TransitionGraph graph = new TransitionGraph();
 		StaticLattice lattice = new StaticLattice(lat);
 		MainWindow window = new MainWindow();
 		GameOfLifeReverser.window = window;
-		TransitionGraph graph = new TransitionGraph();
-		graph.addNode(lattice);
-		System.out.println(graph.calculateLevel(lattice));
+		//graph.addNode(lattice);
+		//System.out.println(graph.calculateLevel(lattice));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("hashcode : " + lattice.hashCode());
-		Optional<StaticLattice> nextLat = Optional.of(lattice);
-		String cmd = "";
-		Set<StaticLattice> blacklist = new HashSet<>();
+		Optional<StaticLattice> nextLat = new GameOfLifeReverser(lattice).pathFinder1D();
+		if (nextLat.isPresent()) {
+			window.drawLattice(nextLat.get());
+			System.out.printf("Config : %n\t");
+			GeneticAlgorithm.afficheLattice(nextLat.get());
+		} else
+			System.out.println("no predecessor found");
+		/*String cmd = "";
+		Set<BitSet> blacklist = new HashSet<>();
 		do {
 			lattice = nextLat.get();
 			window.drawLattice(lattice);
 			System.out.printf("hashcode : %d level = %d, successor hashcode : %d%n", lattice.hashCode(), graph.calculateLevel(lattice), lattice.iterate().hashCode());
-			//nextLat = new GameOfLifeReverser(lattice).pathFinder(blacklist);
-			nextLat = new GameOfLifeReverser(lattice).stochasticSearch();
+			nextLat = new GameOfLifeReverser(lattice, blacklist).pathFinder1D();
+			//nextLat = new GameOfLifeReverser(lattice).stochasticSearch();
 			if (nextLat.isPresent() && graph.calculateLevel(nextLat.get()) > 0) {
 				if (!nextLat.get().iterate().equals(lattice))
 					System.out.println("NOT PREDECESSOR!");
 			} else {
-				blacklist.add(lattice);
+				blacklist.add(lattice.getBitSet());
 				System.out.printf("No predecessor found or in loop. Blacklisting %d (BL size=%d).%n", lattice.hashCode(), blacklist.size());
 				nextLat = Optional.of(lattice.iterate());
 			}
 			Thread.sleep(250);
 			if (reader.ready())
 				cmd = reader.readLine();
-		} while (!cmd.equals("exit"));
-		System.exit(0);
+		} while (!cmd.equals("exit"));*/
 	}
 
 	public static final Random random = new Random(System.currentTimeMillis());
 	public static MainWindow window;
 	private final StaticLattice goalLattice;
+	private Set<BitSet> blacklist;
 
 	public GameOfLifeReverser(StaticLattice goalLattice) {
 		this.goalLattice = goalLattice;
+		blacklist = new HashSet<>();
+	}
+
+	public GameOfLifeReverser(StaticLattice goalLattice, Set<BitSet> blacklist) {
+		this.goalLattice = goalLattice;
+		this.blacklist = blacklist;
 	}
 
 	/* STOCHASTIC SEARCH */
@@ -75,7 +88,7 @@ public class GameOfLifeReverser {
 						y = j;
 					}
 			if (random.nextDouble() < 0.3) {
-				int[] nudge = Lattice.neighbours[random.nextInt(Lattice.neighbours.length)];
+				int[] nudge = Lattice.Connectivity.CONNECT8.getNeighbours()[random.nextInt(Lattice.Connectivity.CONNECT8.getNeighbours().length)];
 				x = Math.floorMod(x + nudge[0], array.length);
 				y = Math.floorMod(y + nudge[1], array[0].length);
 			}
@@ -106,7 +119,7 @@ public class GameOfLifeReverser {
 			for (int i = 0; i < w; i++)
 				for (int j = 0; j < h; j++)
 					if (lat[i][j])
-						for (int[] diff : Lattice.neighbours) {
+						for (int[] diff : Connectivity.CONNECT8.getNeighbours()) {
 							liveNeighbours[Math.floorMod(i + diff[0], w)][Math.floorMod(j + diff[1], h)]++;
 						}
 
@@ -115,7 +128,7 @@ public class GameOfLifeReverser {
 					successor[i][j] = GameOfLife.evolve(lat[i][j], liveNeighbours[i][j]);
 					satisfied[i][j] = successor[i][j] == goal[i][j];
 					if (!satisfied[i][j])
-						for (int[] diff : Lattice.neighbours)
+						for (int[] diff : Connectivity.CONNECT8.getNeighbours())
 							unsatisfiedNeighbours[Math.floorMod(i + diff[0], w)][Math.floorMod(j + diff[1], h)]++;
 				}
 		}
@@ -123,13 +136,13 @@ public class GameOfLifeReverser {
 		public void toggleCell(int i, int j) {
 			int inc = lat[i][j] ? -1 : 1;
 			lat[i][j] = !lat[i][j];
-			for (int[] diff : Lattice.neighbours) {
+			for (int[] diff : Connectivity.CONNECT8.getNeighbours()) {
 				int x = Math.floorMod(i + diff[0], lat.length), y = Math.floorMod(j + diff[1], lat[0].length);
 				liveNeighbours[x][y] += inc;
 				successor[x][y] = GameOfLife.evolve(lat[x][y], liveNeighbours[x][y]);
 				if (satisfied[x][y] != (successor[x][y] == goal[x][y])) {
 					int signus = satisfied[x][y] ? -1 : 1;
-					for (int[] d : Lattice.neighbours)
+					for (int[] d : Connectivity.CONNECT8.getNeighbours())
 						unsatisfiedNeighbours[Math.floorMod(i + d[0], getWidth())][Math.floorMod(j + d[1], getHeight())] += signus;
 				}
 				satisfied[x][y] = (successor[x][y] == goal[x][y]);
@@ -158,6 +171,11 @@ public class GameOfLifeReverser {
 		public int getHeight() {
 			return lat[0].length;
 		}
+
+		@Override
+		public Connectivity getConnectivity() {
+			return Connectivity.CONNECT8;
+		}
 	}
 
 	/* PATHFINDER SEARCH */
@@ -178,7 +196,7 @@ public class GameOfLifeReverser {
 			set.remove(first);
 			if (!blacklist.contains(first.lattice)) {
 				generateNeighbours(first, set::add, tested);
-				if (iter%1000 == 0)
+				if (iter % 1000 == 0)
 					System.out.printf("Iter %d : dist=%d, size=%d%n", iter, set.first().unsatisfied, set.size());
 			}
 			tested.add(first.lattice);
@@ -196,13 +214,42 @@ public class GameOfLifeReverser {
 		int count = parent.lattice.getCellCount();
 		StaticLattice lat;
 		for (int i = 0; i < parent.getWidth(); i++)
-			for (int j = 0; j < parent.getWidth(); j++) {
+			for (int j = 0; j < parent.getHeight(); j++) {
 				base[i][j] = !base[i][j];
 				lat = new StaticLattice(base);
 				if (!avoid.contains(lat))
 					consumer.accept(new StatLattice(lat, count + (base[i][j] ? 1 : -1)));
 				base[i][j] = !base[i][j];
 			}
+	}
+
+	public Optional<StaticLattice> pathFinder1D() {
+		return Optional.ofNullable(pathFind1D(goalLattice, new BitSet(0), 0));
+	}
+
+	private StaticLattice pathFind1D(StaticLattice target, BitSet config, int iter) {
+		if (iter >= 3) {
+			BitSet set = StaticLattice.iterate(config, iter);
+			for (int i = (iter == target.getWidth() ? 0 : 1); i < (iter == target.getWidth() ? iter : iter - 1); i++)
+				if (set.get(i) != target.get(i, 0))
+					return null;
+			if (iter == target.getWidth()) {
+				if (!blacklist.contains(config))
+					return new StaticLattice(config, target.getWidth(), target.getHeight());
+				else
+					return null;
+			}
+
+		}
+		BitSet newSet = new BitSet(iter + 1);
+		newSet.or(config);
+		newSet.set(iter, target.get(iter, 0));
+		StaticLattice lat = pathFind1D(target, newSet, iter + 1);
+		if (lat == null) {
+			newSet.flip(iter);
+			lat = pathFind1D(target, newSet, iter + 1);
+		}
+		return lat;
 	}
 
 	private class StatLattice implements Comparable<StatLattice>, Lattice {
@@ -249,6 +296,11 @@ public class GameOfLifeReverser {
 		@Override
 		public int getHeight() {
 			return lattice.getHeight();
+		}
+
+		@Override
+		public Connectivity getConnectivity() {
+			return Connectivity.CONNECT8;
 		}
 
 		@Override

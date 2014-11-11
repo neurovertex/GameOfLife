@@ -23,4 +23,8 @@ public class GameOfLife {
 		else
 			return !(neighbours < 2 || neighbours > 3);
 	}
+
+	public static boolean evolve2D(boolean cell, boolean... neighbours) {
+		return (cell ? 1 : 0) + (neighbours[0] ? 1 : 0) + (neighbours[1] ? 1 : 0) == 1;
+	}
 }

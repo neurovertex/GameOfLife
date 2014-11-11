@@ -152,6 +152,53 @@ public class TransitionGraph {
 		return node.level;
 	}
 
+	/**
+	 * Returns the level of the given node, after calculation if necessary. Unlike calculateLevel, this method won't store
+	 * any generated node beside the given one, and will minimize memory consuption during the calculations
+	 *
+	 * @param node Lattice to calculate
+	 * @return Level of the node
+	 */
+	public int memorylessCalculateLevel(StaticLattice node) {
+		GraphNode gnode = addOrGet(node);
+
+		/**
+		 * Wrapper to override hashCode and equals because Java arrays are dumb
+		 */
+		class ArrayWrapper {
+			private BitSet lattice;
+			private int level;
+
+			ArrayWrapper(BitSet lattice, int level) {
+				this.lattice = lattice;
+				this.level = level;
+			}
+
+			@Override
+			public int hashCode() {
+				return lattice.hashCode();
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				return obj instanceof ArrayWrapper && lattice.equals(((ArrayWrapper) obj).lattice);
+			}
+		}
+
+		if (gnode.level == -1) {
+			StaticLattice lat = node;
+			ArrayWrapper wrapper = new ArrayWrapper(node.getBitSet(), 0);
+			Map<ArrayWrapper, ArrayWrapper> map = new HashMap<>();
+			do {
+				map.put(wrapper, wrapper);
+				lat = lat.iterate();
+				wrapper = new ArrayWrapper(lat.getBitSet(), wrapper.level + 1);
+			} while (!map.containsKey(wrapper));
+			gnode.level = map.get(wrapper).level;
+		}
+		return gnode.level;
+	}
+
 	private class GraphNode {
 		private StaticLattice node;
 		private Optional<GraphNode> successor = Optional.empty();
